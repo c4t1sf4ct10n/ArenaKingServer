@@ -1,12 +1,12 @@
-import express from 'express';
-import { json, urlencoded } from 'body-parser';
-import { connect, query } from 'mssql';
-import { v4 as uuidv4 } from 'uuid';  // Utiliser uuid pour générer un UUID
+const express = require('express');
+const bodyParser = require('body-parser');
+const mssql = require('mssql');
+const { v4: uuidv4 } = require('uuid');  // Utiliser uuid pour générer un UUID
 
 const app = express();
 
-app.use(json());
-app.use(urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configurer la connexion à SQL Server
 const dbConfig = {
