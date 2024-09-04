@@ -29,6 +29,33 @@ app.get('/api/player/:id', async (req, res) => {
     }
 });
 
+// Route pour vérifier l'existence d'un compte
+app.get('/api/checkDevice/:deviceId', async (req, res) => {
+    const deviceId = req.params.deviceId;
+    try {
+        const result = await sql.query`SELECT * FROM users WHERE device_id = ${deviceId}`;
+        if (result.recordset.length > 0) {
+            res.json(result.recordset[0]);  // Le compte existe, retourner les infos
+        } else {
+            res.json({ exists: false });    // Le compte n'existe pas
+        }
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+// Route pour créer un compte si nécessaire
+app.post('/api/createUser', async (req, res) => {
+    const { device_id } = req.body;
+    try {
+        const result = await sql.query`INSERT INTO users (device_id) OUTPUT Inserted.user_id VALUES (${device_id})`;
+        res.json({ userId: result.recordset[0].user_id });
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+
 // Lancer le serveur
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
