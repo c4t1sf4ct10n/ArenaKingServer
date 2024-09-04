@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mssql = require('mssql');
-const { v4: uuidv4 } = require('uuid');  // Utiliser uuid pour générer un UUID
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 
@@ -10,25 +10,27 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configurer la connexion à SQL Server
 const dbConfig = {
-    user: 'ch4t0n',         // Utilisateur SQL Server
-    password: '&P4ssw0rd_1',     // Mot de passe SQL Server
-    server: 'arenakingdb.database.windows.net', // L'URL de votre serveur Azure SQL
-    database: 'arena-king', // Nom de votre base de données
+    user: 'ch4t0n',
+    password: '&P4ssw0rd_1',
+    server: 'arenakingdb.database.windows.net',
+    database: 'arena-king',
     options: {
-        encrypt: true // Pour les connexions Azure SQL
+        encrypt: true
     }
 };
 
 // Connexion à la base de données
-connect(dbConfig).then(() => {
+mssql.connect(dbConfig).then(() => {
     console.log("Connecté à SQL Server");
-}).catch(err => console.log(err));
+}).catch(err => console.log("Erreur de connexion à SQL Server: ", err));
 
 // Route pour récupérer les données du joueur
 app.get('/api/player/:id', async (req, res) => {
     try {
         const playerId = req.params.id;
-        const result = await query`SELECT * FROM player_data WHERE player_id = ${playerId}`;
+        const request = new mssql.Request();
+        request.input('playerId', mssql.UniqueIdentifier, playerId);
+        const result = await request.query('SELECT * FROM player_data WHERE player_id = @playerId');
         res.json(result.recordset);
     } catch (err) {
         res.status(500).send(err.message);
@@ -39,7 +41,9 @@ app.get('/api/player/:id', async (req, res) => {
 app.get('/api/checkDevice/:deviceId', async (req, res) => {
     const deviceId = req.params.deviceId;
     try {
-        const result = await query`SELECT * FROM users WHERE device_id = ${deviceId}`;
+        const request = new mssql.Request();
+        request.input('deviceId', mssql.VarChar, deviceId);
+        const result = await request.query('SELECT * FROM users WHERE device_id = @deviceId');
         if (result.recordset.length > 0) {
             res.json(result.recordset[0]);  // Le compte existe, retourner les infos
         } else {
@@ -56,13 +60,15 @@ app.post('/api/createUser', async (req, res) => {
     const userId = uuidv4();  // Générer un UUID
 
     try {
-        const result = await query`INSERT INTO users (user_id, device_id) VALUES (${userId}, ${device_id})`;
+        const request = new mssql.Request();
+        request.input('userId', mssql.UniqueIdentifier, userId);
+        request.input('device_id', mssql.VarChar, device_id);
+        const result = await request.query('INSERT INTO users (user_id, device_id) VALUES (@userId, @device_id)');
         res.json({ userId: userId });
     } catch (err) {
         res.status(500).send(err.message);
     }
 });
-
 
 // Lancer le serveur
 const PORT = process.env.PORT || 3000;
