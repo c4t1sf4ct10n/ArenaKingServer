@@ -1,6 +1,7 @@
 const express = require('express');
 const sql = require('mssql');
 const app = express();
+const { v4: uuidv4 } = require('uuid');  // Utiliser uuid pour générer un UUID
 
 // Configurer la connexion à SQL Server
 const dbConfig = {
@@ -46,10 +47,12 @@ app.get('/api/checkDevice/:deviceId', async (req, res) => {
 
 // Route pour créer un compte si nécessaire
 app.post('/api/createUser', async (req, res) => {
-    const { device_id } = req.body;
+    const device_id = req.body.device_id;
+    const userId = uuidv4();  // Générer un UUID
+
     try {
-        const result = await sql.query`INSERT INTO users (device_id) OUTPUT Inserted.user_id VALUES (${device_id})`;
-        res.json({ userId: result.recordset[0].user_id });
+        const result = await sql.query`INSERT INTO users (user_id, device_id) VALUES (${userId}, ${device_id})`;
+        res.json({ userId: userId });
     } catch (err) {
         res.status(500).send(err.message);
     }
