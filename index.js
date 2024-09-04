@@ -27,10 +27,10 @@ mssql.connect(dbConfig).then(() => {
 // Route pour récupérer les données du joueur
 app.get('/api/player/:id', async (req, res) => {
     try {
-        const playerId = req.params.id;
+        const userId = req.params.id;
         const request = new mssql.Request();
-        request.input('playerId', mssql.UniqueIdentifier, playerId);
-        const result = await request.query('SELECT * FROM player_data WHERE player_id = @playerId');
+        request.input('userId', mssql.UniqueIdentifier, userId);
+        const result = await request.query('SELECT * FROM player_data WHERE user_id = @userId');
         res.json(result.recordset);
     } catch (err) {
         res.status(500).send(err.message);
