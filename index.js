@@ -1,12 +1,12 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const sql = require('mssql');
-const { v4: uuidv4 } = require('uuid');  // Utiliser uuid pour générer un UUID
+import express from 'express';
+import { json, urlencoded } from 'body-parser';
+import { connect, query } from 'mssql';
+import { v4 as uuidv4 } from 'uuid';  // Utiliser uuid pour générer un UUID
 
 const app = express();
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(json());
+app.use(urlencoded({ extended: true }));
 
 // Configurer la connexion à SQL Server
 const dbConfig = {
@@ -20,7 +20,7 @@ const dbConfig = {
 };
 
 // Connexion à la base de données
-sql.connect(dbConfig).then(() => {
+connect(dbConfig).then(() => {
     console.log("Connecté à SQL Server");
 }).catch(err => console.log(err));
 
@@ -28,7 +28,7 @@ sql.connect(dbConfig).then(() => {
 app.get('/api/player/:id', async (req, res) => {
     try {
         const playerId = req.params.id;
-        const result = await sql.query`SELECT * FROM player_data WHERE player_id = ${playerId}`;
+        const result = await query`SELECT * FROM player_data WHERE player_id = ${playerId}`;
         res.json(result.recordset);
     } catch (err) {
         res.status(500).send(err.message);
@@ -39,7 +39,7 @@ app.get('/api/player/:id', async (req, res) => {
 app.get('/api/checkDevice/:deviceId', async (req, res) => {
     const deviceId = req.params.deviceId;
     try {
-        const result = await sql.query`SELECT * FROM users WHERE device_id = ${deviceId}`;
+        const result = await query`SELECT * FROM users WHERE device_id = ${deviceId}`;
         if (result.recordset.length > 0) {
             res.json(result.recordset[0]);  // Le compte existe, retourner les infos
         } else {
@@ -56,7 +56,7 @@ app.post('/api/createUser', async (req, res) => {
     const userId = uuidv4();  // Générer un UUID
 
     try {
-        const result = await sql.query`INSERT INTO users (user_id, device_id) VALUES (${userId}, ${device_id})`;
+        const result = await query`INSERT INTO users (user_id, device_id) VALUES (${userId}, ${device_id})`;
         res.json({ userId: userId });
     } catch (err) {
         res.status(500).send(err.message);
