@@ -15,7 +15,7 @@ const dbConfig = {
 
 // Connexion à la base de données
 sql.connect(dbConfig).then(() => {
-    console.log("Connecté à SQL Server");
+    console.log("Connecté à SQL Server.");
 }).catch(err => console.log(err));
 
 // Route pour récupérer les données du joueur
