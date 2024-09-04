@@ -1,7 +1,12 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const sql = require('mssql');
-const app = express();
 const { v4: uuidv4 } = require('uuid');  // Utiliser uuid pour générer un UUID
+
+const app = express();
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Configurer la connexion à SQL Server
 const dbConfig = {
